@@ -1,56 +1,45 @@
-import os
+from flask import Flask
+import threading
 import time
 import requests
-import pandas as pd
+import os
+
+app = Flask(__name__)
 
 API_KEY = os.getenv("API_KEY")
 
-SYMBOL = "EUR/USD"
-INTERVAL = "5min"
 
-def get_data():
-    url = "https://api.twelvedata.com/time_series"
+def bot():
+    while True:
+        try:
+            url = "https://api.twelvedata.com/time_series"
 
-    params = {
-        "symbol": SYMBOL,
-        "interval": INTERVAL,
-        "outputsize": 100,
-        "apikey": API_KEY
-    }
+            params = {
+                "symbol": "EUR/USD",
+                "interval": "5min",
+                "apikey": API_KEY
+            }
 
-    r = requests.get(url)
-    data = r.json()
+            r = requests.get(url)
 
-    candles = data["values"]
-    df = pd.DataFrame(candles)
+            print(r.json())
 
-    df["close"] = df["close"].astype(float)
-
-    return df.iloc[::-1]
-
-
-def strategy(df):
-    df["ema20"] = df["close"].ewm(span=20).mean()
-    df["ema50"] = df["close"].ewm(span=50).mean()
-
-    last = df.iloc[-1]
-
-    if last["ema20"] > last["ema50"]:
-        return "BUY"
-
-    return "SELL"
-
-
-while True:
-    try:
-        df = get_data()
-
-        signal = strategy(df)
-
-        print("Signal:", signal)
+        except Exception as e:
+            print(e)
 
         time.sleep(60)
 
-    except Exception as e:
-        print(e)
-        time.sleep(30)
+
+@app.route("/")
+def home():
+    return "Forex Algo Bot Running"
+
+
+threading.Thread(target=bot, daemon=True).start()
+
+port = int(os.getenv("PORT", 10000))
+
+app.run(
+    host="0.0.0.0",
+    port=port
+)
