@@ -4,34 +4,19 @@ import os
 
 app = Flask(__name__)
 
-TOKEN = os.getenv("OANDA_API_KEY", "").strip()
-ACCOUNT = os.getenv("ACCOUNT_ID", "").strip()
-
-
 @app.route("/")
 def home():
 
-    url = f"https://api-fxpractice.oanda.com/v3/accounts/{ACCOUNT}/summary"
+    token = os.getenv("OANDA_API_KEY","").strip()
+    account = os.getenv("ACCOUNT_ID","").strip()
 
-    headers = {
-        "Authorization": f"Bearer {TOKEN}",
-        "Content-Type": "application/json"
+    return {
+        "token_exists": bool(token),
+        "account_exists": bool(account),
+        "account": account[-6:] if account else "missing"
     }
 
-    r = requests.get(
-        url,
-        headers=headers
-    )
-
-    return r.text
-
-
 app.run(
-    host="0.0.0.0",
-    port=int(
-        os.getenv(
-            "PORT",
-            10000
-        )
-    )
+host="0.0.0.0",
+port=int(os.getenv("PORT",10000))
 )
