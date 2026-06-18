@@ -2,3 +2,4 @@ oandapyV20
 python-telegram-bot==20.7
 APScheduler==3.10.4
 pandas==2.2.2
+numpy==1.26.4        # pandas ke saath explicitly add karo
